@@ -1,4 +1,7 @@
 import unittest
+import pytest
+
+pytest.importorskip("hyo2.qax.plugin")
 
 from ausseabed.mbesgc.qax.plugin import MbesGridChecksQaxPlugin
 

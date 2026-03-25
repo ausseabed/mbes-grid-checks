@@ -1,7 +1,6 @@
-from pathlib import Path
 import unittest
 
-from ausseabed.mbesgc.lib.tiling import Tile, get_tiles
+from ausseabed.mbesgc.lib.tiling import get_tiles
 
 
 class TestTiling(unittest.TestCase):
@@ -9,8 +8,8 @@ class TestTiling(unittest.TestCase):
     def test_get_tiles(self):
         min_x = 0
         min_y = 0
-        min_x = 14
-        min_y = 6
+        max_x = 14
+        max_y = 6
         size_x = 4
         size_y = 4
 
