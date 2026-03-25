@@ -12,8 +12,13 @@ authors = [
 ]
 
 dependencies = [
-  "Click",
   "ausseabed.qajson",
+  "affine",
+  "Click",
+  "numpy",
+  "scipy",
+  "gdal",
+  "geojson",
 ]
 
 [project.urls]
