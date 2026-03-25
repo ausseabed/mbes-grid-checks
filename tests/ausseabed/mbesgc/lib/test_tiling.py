@@ -1,6 +1,6 @@
 import unittest
 
-from ausseabed.mbesgc.lib.tiling import Tile, get_tiles
+from ausseabed.mbesgc.lib.tiling import get_tiles
 
 
 class TestTiling(unittest.TestCase):

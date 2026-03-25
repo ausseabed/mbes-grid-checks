@@ -10,17 +10,13 @@ import json
 import os
 import sys
 
-from osgeo import gdal
 from pathlib import Path
-from typing import Optional, Dict, List, Any
 
 from ausseabed.mbesgc.lib.data import get_input_details, \
     inputs_from_qajson_checks, qajson_from_inputs
 from ausseabed.mbesgc.lib.executor import Executor
-from ausseabed.mbesgc.lib.check_utils import get_all_check_ids, get_check
 from ausseabed.mbesgc.lib.allchecks import all_checks
 from ausseabed.qajson.parser import QajsonParser
-from ausseabed.qajson.model import QajsonCheck
 
 
 @click.command()

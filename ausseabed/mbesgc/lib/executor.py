@@ -2,7 +2,7 @@
 Manages process of executing checks
 '''
 
-from typing import Optional, Dict, List, Any, Tuple
+from typing import Dict, List, Tuple
 from osgeo import gdal
 import logging
 import numpy as np

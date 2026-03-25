@@ -7,9 +7,9 @@ import os
 from osgeo import gdal
 from osgeo import ogr
 from osgeo import osr
-from typing import List, Tuple
+from typing import List
 
-from .tiling import get_tiles, Tile
+from .tiling import get_tiles
 
 
 logger = logging.getLogger(__name__)
