@@ -1,10 +1,6 @@
 from pathlib import Path
-import math
 import unittest
 
-from osgeo import gdal
-from osgeo import ogr
-from typing import List
 
 from ausseabed.mbesgc.lib.pinkchart import PinkChartProcessor, Extents
 

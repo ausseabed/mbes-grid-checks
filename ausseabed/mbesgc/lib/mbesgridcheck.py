@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List, Any
+from typing import List
 from ausseabed.qajson.model import QajsonParam, QajsonOutputs, QajsonExecution
 from ausseabed.mbesgc.lib.data import InputFileDetails
 from ausseabed.mbesgc.lib.tiling import Tile
@@ -7,13 +7,12 @@ import collections
 import logging
 import numpy as np
 import numpy.ma as ma
-import scipy.ndimage as ndimage
 import geojson
 from geojson import MultiPolygon
 from osgeo import gdal, ogr, osr
 from affine import Affine
 
-from .gridcheck import GridCheck, GridCheckState, GridCheckResult
+from .gridcheck import GridCheck, GridCheckState
 
 logger = logging.getLogger(__name__)
 

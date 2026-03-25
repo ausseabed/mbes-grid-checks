@@ -1,4 +1,4 @@
-from typing import List, Dict, NoReturn, Callable, Tuple, Any, Set
+from typing import List, NoReturn, Callable, Tuple
 from pathlib import Path
 
 
@@ -8,8 +8,7 @@ from ausseabed.mbesgc.lib.executor import Executor
 
 from hyo2.qax.lib.plugin import QaxCheckToolPlugin, QaxCheckReference, \
     QaxFileType
-from ausseabed.qajson.model import QajsonRoot, QajsonDataLevel, QajsonCheck, \
-    QajsonFile, QajsonInputs
+from ausseabed.qajson.model import QajsonRoot, QajsonInputs
 
 
 

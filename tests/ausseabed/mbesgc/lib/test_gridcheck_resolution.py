@@ -1,10 +1,9 @@
 import numpy as np
 import unittest
 
-from ausseabed.qajson.model import QajsonParam, QajsonOutputs, QajsonExecution
+from ausseabed.qajson.model import QajsonParam
 
-from ausseabed.mbesgc.lib.gridcheck import GridCheck, GridCheckState, GridCheckResult
-from ausseabed.mbesgc.lib.mbesgridcheck import DensityCheck, TvuCheck, ResolutionCheck
+from ausseabed.mbesgc.lib.mbesgridcheck import ResolutionCheck
 from ausseabed.mbesgc.lib.data import InputFileDetails
 from ausseabed.mbesgc.lib.tiling import Tile
 

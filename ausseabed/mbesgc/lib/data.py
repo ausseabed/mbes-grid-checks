@@ -13,7 +13,7 @@ import os.path
 from pathlib import Path
 
 from ausseabed.qajson.model import QajsonCheck, QajsonRoot, \
-    QajsonParam, QajsonQa, QajsonDataLevel, QajsonInfo, QajsonGroup, \
+    QajsonQa, QajsonDataLevel, QajsonInfo, QajsonGroup, \
     QajsonInputs, QajsonFile
 from ausseabed.qajson.utils import latest_schema_version
 
@@ -153,7 +153,7 @@ class InputFileDetails:
                 valid = ogr_srs.Validate()
                 if valid != ogr.OGRERR_NONE:
                     raise RuntimeError("CRS failed validation")
-            except Exception as e:
+            except Exception:
                 validation_messages.append(f"{filename} has invalid Coordinate Reference System (CRS) information")
                 validation_messages.append(f'CRS string is "{proj_str}"')
 
@@ -390,7 +390,7 @@ def _get_bag_details(input_file):
 
     if depth_size_x != density_size_x or depth_size_y != density_size_y:
         raise RuntimeError(
-            f'mismatch in data sizes across depth and density inputs. '
+            'mismatch in data sizes across depth and density inputs. '
             'Both files must have the same size.'
         )
 

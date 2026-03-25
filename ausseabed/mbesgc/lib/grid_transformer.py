@@ -1,5 +1,5 @@
-from osgeo import gdal, osr, gdal_array
-from typing import Tuple, NoReturn, Callable, List
+from osgeo import gdal, gdal_array
+from typing import Tuple, Callable, List
 import numpy as np
 
 from .tiling import get_tiles, Tile

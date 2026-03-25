@@ -1,5 +1,4 @@
 import unittest
-from typing import List
 
 from ausseabed.mbesgc.qax.plugin import MbesGridChecksQaxPlugin
 

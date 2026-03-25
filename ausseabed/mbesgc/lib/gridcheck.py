@@ -7,22 +7,14 @@ from enum import Enum
 from pathlib import PurePath
 from tempfile import TemporaryDirectory
 import distutils
-from distutils import dir_util
-from typing import Optional, Dict, List, Any
-from ausseabed.qajson.model import QajsonParam, QajsonOutputs, QajsonExecution
+from typing import List, Any
+from ausseabed.qajson.model import QajsonParam, QajsonOutputs
 from .data import InputFileDetails
 from .tiling import Tile
 
-import collections
-import numpy as np
-import numpy.ma as ma
 import os
-import shutil
 import scipy.ndimage as ndimage
-import geojson
-from geojson import MultiPolygon
-from osgeo import gdal, ogr, osr
-from affine import Affine
+from osgeo import ogr
 
 
 class GridCheckState(str, Enum):
