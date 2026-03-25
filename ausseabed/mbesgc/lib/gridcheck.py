@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import Enum
 from pathlib import PurePath
 from tempfile import TemporaryDirectory
-import distutils
+import shutil
 from typing import List, Any
 from ausseabed.qajson.model import QajsonParam, QajsonOutputs
 from .data import InputFileDetails
@@ -91,10 +91,9 @@ class GridCheck:
         return os.path.join(self.temp_base_dir, n)
 
     def _move_tmp_dir(self):
-        distutils.dir_util.copy_tree(
-            self.temp_base_dir,
-            self.spatial_export_location)
-        # shutil.copy(self.temp_base_dir, self.spatial_export_location)
+        assert self.temp_base_dir is not None
+        assert self.spatial_export_location is not None
+        shutil.copytree(self.temp_base_dir, self.spatial_export_location, dirs_exist_ok=True)
 
     def check_ended(self):
         '''
