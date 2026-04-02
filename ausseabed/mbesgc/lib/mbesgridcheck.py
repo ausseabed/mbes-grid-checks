@@ -149,7 +149,7 @@ class DensityCheck(GridCheck):
             ogr_srs = osr.SpatialReference()
             ogr_srs.ImportFromWkt(ifd.projection)
 
-            ogr_driver = ogr.GetDriverByName('Memory')
+            ogr_driver = ogr.GetDriverByName('MEM')
             ogr_dataset = ogr_driver.CreateDataSource('shapemask')
             ogr_layer = ogr_dataset.CreateLayer('shapemask', srs=ogr_srs)
 
@@ -165,7 +165,7 @@ class DensityCheck(GridCheck):
                 callback=None
             )
 
-            ogr_simple_driver = ogr.GetDriverByName('Memory')
+            ogr_simple_driver = ogr.GetDriverByName('MEM')
             ogr_simple_dataset = ogr_simple_driver.CreateDataSource(
                 'failed_poly')
             ogr_simple_layer = ogr_simple_dataset.CreateLayer(
@@ -525,7 +525,7 @@ class TvuCheck(GridCheck):
             tile_failed_band.FlushCache()
             tile_failed_ds.SetProjection(ifd.projection)
 
-            ogr_driver = ogr.GetDriverByName('Memory')
+            ogr_driver = ogr.GetDriverByName('MEM')
             ogr_dataset = ogr_driver.CreateDataSource('shapemask')
             ogr_layer = ogr_dataset.CreateLayer('shapemask', srs=ogr_srs)
 
@@ -541,7 +541,7 @@ class TvuCheck(GridCheck):
                 callback=None
             )
 
-            ogr_simple_driver = ogr.GetDriverByName('Memory')
+            ogr_simple_driver = ogr.GetDriverByName('MEM')
             ogr_simple_dataset = ogr_simple_driver.CreateDataSource(
                 'failed_poly')
             ogr_simple_layer = ogr_simple_dataset.CreateLayer(
@@ -892,7 +892,7 @@ class ResolutionCheck(GridCheck):
             tile_failed_band.FlushCache()
             tile_failed_ds.SetProjection(ifd.projection)
 
-            ogr_driver = ogr.GetDriverByName('Memory')
+            ogr_driver = ogr.GetDriverByName('MEM')
             ogr_dataset = ogr_driver.CreateDataSource('shapemask')
             ogr_layer = ogr_dataset.CreateLayer('shapemask', srs=ogr_srs)
 
@@ -908,7 +908,7 @@ class ResolutionCheck(GridCheck):
                 callback=None
             )
 
-            ogr_simple_driver = ogr.GetDriverByName('Memory')
+            ogr_simple_driver = ogr.GetDriverByName('MEM')
             ogr_simple_dataset = ogr_simple_driver.CreateDataSource(
                 'failed_poly')
             ogr_simple_layer = ogr_simple_dataset.CreateLayer(
