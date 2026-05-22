@@ -36,7 +36,7 @@ check01_str = """
                 "value": 5
             },
             {
-                "name": "Minimum Soundings per node at percentage",
+                "name": "Minimum Soundings per node percentage",
                 "value": 9
             },
             {
@@ -85,7 +85,7 @@ check02_str = """
                 "value": 5
             },
             {
-                "name": "Minimum Soundings per node at percentage",
+                "name": "Minimum Soundings per node percentage",
                 "value": 9
             },
             {

@@ -108,7 +108,7 @@ class MbesGridChecksQaxPlugin(QaxCheckToolPlugin):
                 (
                     p
                     for p in density_check.inputs.params
-                    if p.name == 'Minimum Soundings per node at percentage'
+                    if p.name == 'Minimum Soundings per node percentage'
                 ),
                 None
             )
