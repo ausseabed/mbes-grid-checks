@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "main" 
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: ausseabed/.github/.github/workflows/ci.yml@main
+    secrets:
+        prefix_api_token: ${{ secrets.PREFIX_API_KEY }}
