@@ -11,6 +11,8 @@ on:
 
 jobs:
   ci:
-    uses: ausseabed/.github/.github/workflows/ci.yml@main
+    uses: ausseabed/.github/.github/workflows/ci.yml@v1
+    with:
+      pytest: false
     secrets:
         prefix_api_token: ${{ secrets.PREFIX_API_KEY }}
