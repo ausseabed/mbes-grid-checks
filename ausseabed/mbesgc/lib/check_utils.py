@@ -1,7 +1,7 @@
 from typing import Type
 
 
-def get_check(id, check_classes) -> Type:
+def get_check(id, check_classes) -> Type | None:
     '''
     Gets the check class for the given id. Will return None if check not found.
 

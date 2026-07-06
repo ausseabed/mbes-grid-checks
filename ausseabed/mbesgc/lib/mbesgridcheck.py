@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 from ausseabed.qajson.model import QajsonParam, QajsonOutputs, QajsonExecution
 from ausseabed.mbesgc.lib.data import InputFileDetails
 from ausseabed.mbesgc.lib.tiling import Tile
@@ -54,8 +54,9 @@ class DensityCheck(GridCheck):
         # was this check run without a density layer (the only layer it needs)
         self.missing_density = False
 
-    def run(
-            self,
+        self.density_histogram: dict[int, int] = {}
+
+    def run(self,
             ifd: InputFileDetails,
             tile: Tile,
             depth,
@@ -64,6 +65,7 @@ class DensityCheck(GridCheck):
             pinkchart,
             progress_callback=None):
 
+        assert ifd.geotransform is not None
         # this check only requires the density layer, so check it is given
         # if not mark this check as aborted
         self.missing_density = density is None
@@ -136,6 +138,7 @@ class DensityCheck(GridCheck):
 
             # simplify distance is calculated as the distance pixels are grown out
             # `ifd.geotransform[1]` is pixel size
+            assert ifd.geotransform is not None
             simplify_distance = self.pixel_growth * ifd.geotransform[1]
 
             tile_ds.SetGeoTransform(tile_affine.to_gdal())
@@ -245,6 +248,7 @@ class DensityCheck(GridCheck):
         merge the density histogram of the last_check into the current check
         '''
         self.start_time = last_check.start_time
+        assert isinstance(last_check, DensityCheck)
 
         for soundings_count, last_count in last_check.density_histogram.items():
             if soundings_count in self.density_histogram:
@@ -286,7 +290,7 @@ class DensityCheck(GridCheck):
                 files=None,
                 count=None,
                 percentage=None,
-                messages=[self.error_message],
+                messages=[self.error_message] if self.error_message else None,
                 data={},
                 check_state=GridCheckState.cs_fail
             )
@@ -296,7 +300,7 @@ class DensityCheck(GridCheck):
             sorted(self.density_histogram.items()))
 
         messages = []
-        data = {}
+        data: dict[str, Any] = {}
         check_state = None
 
         lowest_sounding_count, occurrences = next(iter(counts.items()))
@@ -387,15 +391,16 @@ class TvuCheck(GridCheck):
         # amount of padding to place around failing pixels
         # this simplifies the geometry, and enlarges the failing area that
         # will allow it to be shown in the UI more easily
-        self.pixel_growth = 5
+        self.pixel_growth: int = 5
 
-        self.total_cell_count = 0
-        self.failed_cell_count = 0
+        self.total_cell_count: int = 0
+        self.failed_cell_count: int = 0
 
-        self.missing_depth = None
-        self.missing_uncertainty = None
+        self.missing_depth: bool = False
+        self.missing_uncertainty: bool = False
 
     def merge_results(self, last_check: GridCheck):
+        assert isinstance(last_check, TvuCheck)
         self.start_time = last_check.start_time
 
         self.total_cell_count += last_check.total_cell_count
@@ -417,6 +422,7 @@ class TvuCheck(GridCheck):
             pinkchart,
             progress_callback=None):
         # run check on tile data
+        assert ifd.geotransform is not None
 
         # this check only requires the density layer, so check it is given
         # if not mark this check as aborted
@@ -493,6 +499,7 @@ class TvuCheck(GridCheck):
 
             # simplify distance is calculated as the distance pixels are grown out
             # `ifd.geotransform[1]` is pixel size
+            assert ifd.geotransform is not None
             simplify_distance = self.pixel_growth * ifd.geotransform[1]
 
             tile_ds = gdal.GetDriverByName('MEM').Create(
@@ -669,7 +676,7 @@ class TvuCheck(GridCheck):
                 files=None,
                 count=None,
                 percentage=None,
-                messages=[self.error_message],
+                messages=[self.error_message] if self.error_message else None,
                 data=data,
                 check_state=GridCheckState.cs_fail
             )
@@ -770,9 +777,10 @@ class ResolutionCheck(GridCheck):
         self.total_cell_count = 0
         self.failed_cell_count = 0
 
-        self.missing_depth = None
+        self.missing_depth = False
 
     def merge_results(self, last_check: GridCheck):
+        assert isinstance(last_check, ResolutionCheck)
         self.start_time = last_check.start_time
 
         self.total_cell_count += last_check.total_cell_count
@@ -806,6 +814,7 @@ class ResolutionCheck(GridCheck):
             # we cant run the check so return
             return
 
+        assert ifd.geotransform is not None
         self.grid_resolution = ifd.geotransform[1]
 
         # count of all cells/nodes/pixels that are not NaN in the uncertainty
@@ -875,6 +884,7 @@ class ResolutionCheck(GridCheck):
 
             # simplify distance is calculated as the distance pixels are grown out
             # `ifd.geotransform[1]` is pixel size
+            assert ifd.geotransform
             simplify_distance = self.pixel_growth * ifd.geotransform[1]
 
             tile_failed_ds = gdal.GetDriverByName('MEM').Create(
@@ -1040,7 +1050,7 @@ class ResolutionCheck(GridCheck):
                 files=None,
                 count=None,
                 percentage=None,
-                messages=[self.error_message],
+                messages=[self.error_message] if self.error_message else None,
                 data=data,
                 check_state=GridCheckState.cs_fail
             )

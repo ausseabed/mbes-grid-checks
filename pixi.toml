@@ -4,7 +4,7 @@ name = "ausseabed-mbesgc"
 # conda dependencies for the package need to duplicate pypi dependencies here,
 # they could also have different names, not in this case
 [package.run-dependencies]
-ausseabed-qajson = "*"
+ausseabed-qajson = ">=0.1.1"
 affine = "*"
 click = "*"
 numpy = "*"
@@ -32,11 +32,13 @@ platforms = ["win-64", "linux-64", "osx-arm64"]
 ## These are environment dependencies for the workspace test env
 [dependencies]
 ausseabed-mbesgc = { path = "." }
+python = "=3.12"
 pytest = "*"
 pytest-cov = "*"
 ruff = "*"
 hatchling = "*"
 pip = "*"
-mypy = ">=1.19.1,<2"
-types-jsonschema = ">=4.26.0.20260202,<5"
+mypy = ">=2.1.0,<3"
+types-jsonschema = ">=4.26.0.20260518,<5"
+scipy-stubs = ">=1.17.1.5,<2"
 

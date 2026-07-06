@@ -7,7 +7,7 @@ from enum import Enum
 from pathlib import PurePath
 from tempfile import TemporaryDirectory
 import shutil
-from typing import List, Any
+from typing import List, Any, ClassVar
 from ausseabed.qajson.model import QajsonParam, QajsonOutputs
 from .data import InputFileDetails
 from .tiling import Tile
@@ -40,6 +40,11 @@ class GridCheck:
     '''
     Base class for all grid checks
     '''
+    id: ClassVar[str] = ""
+    name: ClassVar[str] = ""
+    version: ClassVar[str] = ""
+    input_params: list[QajsonParam] = []
+    parameter_help_link: ClassVar[str] = ""
 
     def __init__(self, input_params: List[QajsonParam]):
         self.input_params = input_params
@@ -51,15 +56,15 @@ class GridCheck:
         # did the check execute successfully
         self.execution_status = 'draft'
         # any error messages that occured during running of the check
-        self.error_message = None
+        self.error_message: str | None = None
 
         self.spatial_export = False
         self.spatial_export_location = None
         self.spatial_qajson = True
 
-        self.temp_dir = None
-        self.temp_base_dir = None
-        self.temp_dir_all = []
+        self.temp_dir: TemporaryDirectory | None = None
+        self.temp_base_dir: str | None = None
+        self.temp_dir_all: list[TemporaryDirectory] = []
 
     def check_started(self):
         '''
@@ -88,6 +93,7 @@ class GridCheck:
 
     def _get_tmp_file(self, name: str, extension: str, tile: Tile) -> str:
         n = f"{name}_{tile.min_x}_{tile.min_y}.{extension}"
+        assert self.temp_base_dir is not None
         return os.path.join(self.temp_base_dir, n)
 
     def _move_tmp_dir(self):
@@ -123,7 +129,7 @@ class GridCheck:
         else:
             return param.value
 
-    def run(
+    def run(self,
             ifd: InputFileDetails,
             tile: Tile,
             depth,

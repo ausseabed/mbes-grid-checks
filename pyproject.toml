@@ -42,3 +42,11 @@ packages = ["ausseabed"]
 
 [tool.hatch.build.targets.sdist]
 packages = ["ausseabed"]
+
+
+[tool.mypy]
+python_version = "3.12"
+
+disable_error_code = ["import-untyped"]
+namespace_packages = true
+explicit_package_bases = true
