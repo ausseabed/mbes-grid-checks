@@ -1,6 +1,6 @@
 [project]
 name = "ausseabed.mbesgc"
-version = "0.1.0"
+version = "0.1.1"
 description = "Quality Assurance checks for grid data derived from Multi Beam Echo Sounder data"
 readme = "README.md"
 requires-python = ">=3.10"
