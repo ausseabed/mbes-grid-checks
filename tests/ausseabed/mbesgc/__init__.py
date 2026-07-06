@@ -14,6 +14,7 @@ class TestTiling(unittest.TestCase):
         size_y = 4
 
         tiles = get_tiles(min_x, min_y, max_x, max_y, size_x, size_y)
+        assert isinstance(tiles, list)
 
     def test_always_fail(self):
         self.assertEqual(1, 2)
