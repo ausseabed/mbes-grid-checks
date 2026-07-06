@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 
 class Executor:
-
     def __init__(self, input_file_details: List[InputFileDetails], check_classes):
         self.input_file_details = input_file_details
         self.tile_size_x = 40000

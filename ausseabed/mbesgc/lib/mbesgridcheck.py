@@ -18,30 +18,29 @@ logger = logging.getLogger(__name__)
 
 
 class DensityCheck(GridCheck):
-    '''
+    """
     Performs check based on density data and input arrays. This looks to
     determine if each node (grid cell) satisfies a minimum count (the value
     stored in the density layer) and whether a percentage of nodes overall
     satisfy a different minimum count.
-    '''
+    """
 
-    id = '5e2afd8a-2ced-4de8-80f5-111c459a7175'
-    name = 'Density Check'
-    version = '1'
+    id = "5e2afd8a-2ced-4de8-80f5-111c459a7175"
+    name = "Density Check"
+    version = "1"
     input_params = [
         QajsonParam("Minimum Soundings per node", 5),
         QajsonParam("Minimum Soundings per node percentage", 95.0),
     ]
-    parameter_help_link='user_manual_qax_MBESGC.html#mbesgc-density-params'
+    parameter_help_link = "user_manual_qax_MBESGC.html#mbesgc-density-params"
 
     def __init__(self, input_params: List[QajsonParam]):
         super().__init__(input_params)
 
         # if a percentage `_min_spn_p` of all nodes is above a threshold
         # `_min_spn` then this check will fail
-        self._min_spn = self.get_param('Minimum Soundings per node')
-        self._min_spn_p = self.get_param(
-            'Minimum Soundings per node percentage')
+        self._min_spn = self.get_param("Minimum Soundings per node")
+        self._min_spn_p = self.get_param("Minimum Soundings per node percentage")
 
         self.tiles_geojson = MultiPolygon()
         self.extents_geojson = MultiPolygon()
@@ -56,14 +55,16 @@ class DensityCheck(GridCheck):
 
         self.density_histogram: dict[int, int] = {}
 
-    def run(self,
-            ifd: InputFileDetails,
-            tile: Tile,
-            depth,
-            density,
-            uncertainty,
-            pinkchart,
-            progress_callback=None):
+    def run(
+        self,
+        ifd: InputFileDetails,
+        tile: Tile,
+        depth,
+        density,
+        uncertainty,
+        pinkchart,
+        progress_callback=None,
+    ):
 
         assert ifd.geotransform is not None
         # this check only requires the density layer, so check it is given
@@ -89,7 +90,7 @@ class DensityCheck(GridCheck):
         # count was found.
         unique_vals, unique_counts = np.unique(density, return_counts=True)
         hist = {}
-        for (val, count) in zip(unique_vals, unique_counts):
+        for val, count in zip(unique_vals, unique_counts):
             if isinstance(val, ma.core.MaskedConstant):
                 continue
             # following gets serialized to JSON and as numpy types are not
@@ -110,10 +111,7 @@ class DensityCheck(GridCheck):
         bad_cells_mask_int8 = bad_cells_mask.astype(np.int8)
 
         src_affine = Affine.from_gdal(*ifd.geotransform)
-        tile_affine = src_affine * Affine.translation(
-            tile.min_x,
-            tile.min_y
-        )
+        tile_affine = src_affine * Affine.translation(tile.min_x, tile.min_y)
 
         # there are similarities in how the qajson spatial outputs are generated
         # and how the exported files are generated, however as it is possible
@@ -123,18 +121,19 @@ class DensityCheck(GridCheck):
         if self.spatial_qajson:
             self.extents_geojson = ifd.get_extents_feature()
 
-            tile_ds = gdal.GetDriverByName('MEM').Create(
-                '',
+            tile_ds = gdal.GetDriverByName("MEM").Create(
+                "",
                 tile.max_x - tile.min_x,
                 tile.max_y - tile.min_y,
                 1,
-                gdal.GDT_Byte
+                gdal.GDT_Byte,
             )
 
             # grow out failed pixels to make them more obvious. We've already
             # calculated the pass/fail stats so this won't impact results.
             bad_cells_mask_int8_grow = self._grow_pixels(
-                bad_cells_mask_int8, self.pixel_growth)
+                bad_cells_mask_int8, self.pixel_growth
+            )
 
             # simplify distance is calculated as the distance pixels are grown out
             # `ifd.geotransform[1]` is pixel size
@@ -152,9 +151,9 @@ class DensityCheck(GridCheck):
             ogr_srs = osr.SpatialReference()
             ogr_srs.ImportFromWkt(ifd.projection)
 
-            ogr_driver = ogr.GetDriverByName('MEM')
-            ogr_dataset = ogr_driver.CreateDataSource('shapemask')
-            ogr_layer = ogr_dataset.CreateLayer('shapemask', srs=ogr_srs)
+            ogr_driver = ogr.GetDriverByName("MEM")
+            ogr_dataset = ogr_driver.CreateDataSource("shapemask")
+            ogr_layer = ogr_dataset.CreateLayer("shapemask", srs=ogr_srs)
 
             # used the input raster data 'tile_band' as the input and mask, if not
             # used as a mask then a feature that outlines the entire dataset is
@@ -165,19 +164,18 @@ class DensityCheck(GridCheck):
                 ogr_layer,
                 -1,
                 [],
-                callback=None
+                callback=None,
             )
 
-            ogr_simple_driver = ogr.GetDriverByName('MEM')
-            ogr_simple_dataset = ogr_simple_driver.CreateDataSource(
-                'failed_poly')
-            ogr_simple_layer = ogr_simple_dataset.CreateLayer(
-                'failed_poly', srs=None)
+            ogr_simple_driver = ogr.GetDriverByName("MEM")
+            ogr_simple_dataset = ogr_simple_driver.CreateDataSource("failed_poly")
+            ogr_simple_layer = ogr_simple_dataset.CreateLayer("failed_poly", srs=None)
 
             self._simplify_layer(
                 ogr_layer,
                 ogr_simple_layer,
-                simplify_distance)
+                simplify_distance,
+            )
 
             ogr_srs_out = osr.SpatialReference()
             ogr_srs_out.ImportFromEPSG(4326)
@@ -196,14 +194,14 @@ class DensityCheck(GridCheck):
             ogr_dataset.Destroy()
 
         if self.spatial_export:
-            tf = self._get_tmp_file('density_failed', 'tif', tile)
-            tile_ds = gdal.GetDriverByName('GTiff').Create(
+            tf = self._get_tmp_file("density_failed", "tif", tile)
+            tile_ds = gdal.GetDriverByName("GTiff").Create(
                 tf,
                 tile.max_x - tile.min_x,
                 tile.max_y - tile.min_y,
                 1,
                 gdal.GDT_Byte,
-                options=['COMPRESS=DEFLATE']
+                options=["COMPRESS=DEFLATE"],
             )
 
             tile_ds.SetGeoTransform(tile_affine.to_gdal())
@@ -217,10 +215,10 @@ class DensityCheck(GridCheck):
             ogr_srs = osr.SpatialReference()
             ogr_srs.ImportFromWkt(ifd.projection)
 
-            sf = self._get_tmp_file('density_failed', 'shp', tile)
+            sf = self._get_tmp_file("density_failed", "shp", tile)
             ogr_driver = ogr.GetDriverByName("ESRI Shapefile")
             ogr_dataset = ogr_driver.CreateDataSource(sf)
-            ogr_layer = ogr_dataset.CreateLayer('density_failed', srs=ogr_srs)
+            ogr_layer = ogr_dataset.CreateLayer("density_failed", srs=ogr_srs)
 
             # used the input raster data 'tile_band' as the input and mask, if not
             # used as a mask then a feature that outlines the entire dataset is
@@ -231,7 +229,7 @@ class DensityCheck(GridCheck):
                 ogr_layer,
                 -1,
                 [],
-                callback=None
+                callback=None,
             )
 
             tile_ds = None
@@ -244,9 +242,9 @@ class DensityCheck(GridCheck):
         # self.tiles_geojson.coordinates.append(tile_geojson.coordinates)
 
     def merge_results(self, last_check: GridCheck):
-        '''
+        """
         merge the density histogram of the last_check into the current check
-        '''
+        """
         self.start_time = last_check.start_time
         assert isinstance(last_check, DensityCheck)
 
@@ -256,9 +254,7 @@ class DensityCheck(GridCheck):
             else:
                 self.density_histogram[soundings_count] = last_count
 
-        self.tiles_geojson.coordinates.extend(
-            last_check.tiles_geojson.coordinates
-        )
+        self.tiles_geojson.coordinates.extend(last_check.tiles_geojson.coordinates)
 
         self._merge_temp_dirs(last_check)
 
@@ -281,7 +277,7 @@ class DensityCheck(GridCheck):
             start=self.start_time,
             end=self.end_time,
             status=self.execution_status,
-            error=self.error_message
+            error=self.error_message,
         )
 
         if self.execution_status == "aborted" or self.execution_status == "failed":
@@ -292,12 +288,11 @@ class DensityCheck(GridCheck):
                 percentage=None,
                 messages=[self.error_message] if self.error_message else None,
                 data={},
-                check_state=GridCheckState.cs_fail
+                check_state=GridCheckState.cs_fail,
             )
 
         # sort the list of sounding counts and the number of occurrences
-        counts = collections.OrderedDict(
-            sorted(self.density_histogram.items()))
+        counts = collections.OrderedDict(sorted(self.density_histogram.items()))
 
         messages = []
         data: dict[str, Any] = {}
@@ -312,14 +307,15 @@ class DensityCheck(GridCheck):
                 break
             under_threshold_soundings += occurrences
 
-        percentage_over_threshold = \
-            (1.0 - under_threshold_soundings / total_soundings) * 100.0
+        percentage_over_threshold = (
+            1.0 - under_threshold_soundings / total_soundings
+        ) * 100.0
 
         if percentage_over_threshold < self._min_spn_p:
             messages.append(
-                f'{percentage_over_threshold:.1f}% of nodes were found to have a '
-                f'sounding count above {self._min_spn}. This is required to'
-                f' be {self._min_spn_p}% of all nodes'
+                f"{percentage_over_threshold:.1f}% of nodes were found to have a "
+                f"sounding count above {self._min_spn}. This is required to"
+                f" be {self._min_spn_p}% of all nodes"
             )
             check_state = GridCheckState.cs_fail
 
@@ -330,19 +326,19 @@ class DensityCheck(GridCheck):
         for key, val in counts.items():
             str_key_counts[str(key)] = val
 
-        data['chart'] = {
-            'type': 'histogram',
-            'data': str_key_counts
+        data["chart"] = {
+            "type": "histogram",
+            "data": str_key_counts,
         }
 
         if self.spatial_qajson:
-            data['map'] = self.tiles_geojson
-            data['extents'] = self.extents_geojson
+            data["map"] = self.tiles_geojson
+            data["extents"] = self.extents_geojson
 
-        data['summary'] = {
-            'total_soundings': total_soundings,
-            'percentage_over_threshold': percentage_over_threshold,
-            'under_threshold_soundings': under_threshold_soundings
+        data["summary"] = {
+            "total_soundings": total_soundings,
+            "percentage_over_threshold": percentage_over_threshold,
+            "under_threshold_soundings": under_threshold_soundings,
         }
 
         result = QajsonOutputs(
@@ -352,38 +348,36 @@ class DensityCheck(GridCheck):
             percentage=None,
             messages=messages,
             data=data,
-            check_state=check_state
+            check_state=check_state,
         )
 
         return result
 
 
 class TvuCheck(GridCheck):
-    '''
+    """
     Total Vertical Uncertainty check. An allowable value is calculated on a
     per node basis that is derived from some constants (constant depth error,
     factor of depth dependent error) and the depth itself. This is then
     compared against the calculated uncertainty value within the data.
-    '''
+    """
 
-    id = 'b5c0469c-6559-4aea-bf9c-d0b337550e89'
-    name = 'Total Vertical Uncertainty Check'
-    version = '1'
+    id = "b5c0469c-6559-4aea-bf9c-d0b337550e89"
+    name = "Total Vertical Uncertainty Check"
+    version = "1"
     input_params = [
         QajsonParam("Constant Depth Error", 0.5),
         QajsonParam("Factor of Depth Dependent Errors", 0.013),
-        QajsonParam("Acceptable Area Percentage", 100.0)
+        QajsonParam("Acceptable Area Percentage", 100.0),
     ]
-    parameter_help_link='user_manual_qax_MBESGC.html#mbesgc-tvu-params'
+    parameter_help_link = "user_manual_qax_MBESGC.html#mbesgc-tvu-params"
 
     def __init__(self, input_params: List[QajsonParam]):
         super().__init__(input_params)
 
-        self._depth_error = self.get_param('Constant Depth Error')
-        self._depth_error_factor = self.get_param(
-            'Factor of Depth Dependent Errors')
-        self._area_percentage = self.get_param(
-            'Acceptable Area Percentage')
+        self._depth_error = self.get_param("Constant Depth Error")
+        self._depth_error_factor = self.get_param("Factor of Depth Dependent Errors")
+        self._area_percentage = self.get_param("Acceptable Area Percentage")
 
         self.tiles_geojson = MultiPolygon()
         self.extents_geojson = MultiPolygon()
@@ -406,21 +400,20 @@ class TvuCheck(GridCheck):
         self.total_cell_count += last_check.total_cell_count
         self.failed_cell_count += last_check.failed_cell_count
 
-        self.tiles_geojson.coordinates.extend(
-            last_check.tiles_geojson.coordinates
-        )
+        self.tiles_geojson.coordinates.extend(last_check.tiles_geojson.coordinates)
 
         self._merge_temp_dirs(last_check)
 
     def run(
-            self,
-            ifd: InputFileDetails,
-            tile: Tile,
-            depth,
-            density,
-            uncertainty,
-            pinkchart,
-            progress_callback=None):
+        self,
+        ifd: InputFileDetails,
+        tile: Tile,
+        depth,
+        density,
+        uncertainty,
+        pinkchart,
+        progress_callback=None,
+    ):
         # run check on tile data
         assert ifd.geotransform is not None
 
@@ -462,7 +455,7 @@ class TvuCheck(GridCheck):
             return
 
         # calculate allowable uncertainty based on equation and depth data
-        allowable_uncertainty = np.sqrt(a**2 + (b * depth)**2)
+        allowable_uncertainty = np.sqrt(a**2 + (b * depth) ** 2)
 
         failed_uncertainty = uncertainty > allowable_uncertainty
 
@@ -479,10 +472,7 @@ class TvuCheck(GridCheck):
             return
 
         src_affine = Affine.from_gdal(*ifd.geotransform)
-        tile_affine = src_affine * Affine.translation(
-            tile.min_x,
-            tile.min_y
-        )
+        tile_affine = src_affine * Affine.translation(tile.min_x, tile.min_y)
 
         ogr_srs = osr.SpatialReference()
         ogr_srs.ImportFromWkt(ifd.projection)
@@ -495,19 +485,20 @@ class TvuCheck(GridCheck):
             # grow out failed pixels to make them more obvious. We've already
             # calculated the pass/fail stats so this won't impact results.
             failed_uncertainty_int8_grow = self._grow_pixels(
-                failed_uncertainty_int8, self.pixel_growth)
+                failed_uncertainty_int8, self.pixel_growth
+            )
 
             # simplify distance is calculated as the distance pixels are grown out
             # `ifd.geotransform[1]` is pixel size
             assert ifd.geotransform is not None
             simplify_distance = self.pixel_growth * ifd.geotransform[1]
 
-            tile_ds = gdal.GetDriverByName('MEM').Create(
-                '',
+            tile_ds = gdal.GetDriverByName("MEM").Create(
+                "",
                 tile.max_x - tile.min_x,
                 tile.max_y - tile.min_y,
                 1,
-                gdal.GDT_Float32
+                gdal.GDT_Float32,
             )
             tile_ds.SetGeoTransform(tile_affine.to_gdal())
 
@@ -517,12 +508,12 @@ class TvuCheck(GridCheck):
             tile_band.FlushCache()
             tile_ds.SetProjection(ifd.projection)
 
-            tile_failed_ds = gdal.GetDriverByName('MEM').Create(
-                '',
+            tile_failed_ds = gdal.GetDriverByName("MEM").Create(
+                "",
                 tile.max_x - tile.min_x,
                 tile.max_y - tile.min_y,
                 1,
-                gdal.GDT_Byte
+                gdal.GDT_Byte,
             )
             tile_failed_ds.SetGeoTransform(tile_affine.to_gdal())
 
@@ -532,9 +523,9 @@ class TvuCheck(GridCheck):
             tile_failed_band.FlushCache()
             tile_failed_ds.SetProjection(ifd.projection)
 
-            ogr_driver = ogr.GetDriverByName('MEM')
-            ogr_dataset = ogr_driver.CreateDataSource('shapemask')
-            ogr_layer = ogr_dataset.CreateLayer('shapemask', srs=ogr_srs)
+            ogr_driver = ogr.GetDriverByName("MEM")
+            ogr_dataset = ogr_driver.CreateDataSource("shapemask")
+            ogr_layer = ogr_dataset.CreateLayer("shapemask", srs=ogr_srs)
 
             # used the input raster data 'tile_band' as the input and mask, if not
             # used as a mask then a feature that outlines the entire dataset is
@@ -545,19 +536,14 @@ class TvuCheck(GridCheck):
                 ogr_layer,
                 -1,
                 [],
-                callback=None
+                callback=None,
             )
 
-            ogr_simple_driver = ogr.GetDriverByName('MEM')
-            ogr_simple_dataset = ogr_simple_driver.CreateDataSource(
-                'failed_poly')
-            ogr_simple_layer = ogr_simple_dataset.CreateLayer(
-                'failed_poly', srs=None)
+            ogr_simple_driver = ogr.GetDriverByName("MEM")
+            ogr_simple_dataset = ogr_simple_driver.CreateDataSource("failed_poly")
+            ogr_simple_layer = ogr_simple_dataset.CreateLayer("failed_poly", srs=None)
 
-            self._simplify_layer(
-                ogr_layer,
-                ogr_simple_layer,
-                simplify_distance)
+            self._simplify_layer(ogr_layer, ogr_simple_layer, simplify_distance)
 
             ogr_srs_out = osr.SpatialReference()
             ogr_srs_out.ImportFromEPSG(4326)
@@ -578,14 +564,14 @@ class TvuCheck(GridCheck):
             ogr_dataset.Destroy()
 
         if self.spatial_export:
-            au = self._get_tmp_file('allowable_uncertainty', 'tif', tile)
-            tile_ds = gdal.GetDriverByName('GTiff').Create(
+            au = self._get_tmp_file("allowable_uncertainty", "tif", tile)
+            tile_ds = gdal.GetDriverByName("GTiff").Create(
                 au,
                 tile.max_x - tile.min_x,
                 tile.max_y - tile.min_y,
                 1,
                 gdal.GDT_Float32,
-                options=['COMPRESS=DEFLATE']
+                options=["COMPRESS=DEFLATE"],
             )
             tile_ds.SetGeoTransform(tile_affine.to_gdal())
 
@@ -595,14 +581,14 @@ class TvuCheck(GridCheck):
             tile_band.FlushCache()
             tile_ds.SetProjection(ifd.projection)
 
-            tf = self._get_tmp_file('failed_uncertainty', 'tif', tile)
-            tile_failed_ds = gdal.GetDriverByName('GTiff').Create(
+            tf = self._get_tmp_file("failed_uncertainty", "tif", tile)
+            tile_failed_ds = gdal.GetDriverByName("GTiff").Create(
                 tf,
                 tile.max_x - tile.min_x,
                 tile.max_y - tile.min_y,
                 1,
                 gdal.GDT_Byte,
-                options=['COMPRESS=DEFLATE']
+                options=["COMPRESS=DEFLATE"],
             )
             tile_failed_ds.SetGeoTransform(tile_affine.to_gdal())
 
@@ -612,11 +598,10 @@ class TvuCheck(GridCheck):
             tile_failed_band.FlushCache()
             tile_failed_ds.SetProjection(ifd.projection)
 
-            sf = self._get_tmp_file('failed_uncertainty', 'shp', tile)
+            sf = self._get_tmp_file("failed_uncertainty", "shp", tile)
             ogr_driver = ogr.GetDriverByName("ESRI Shapefile")
             ogr_dataset = ogr_driver.CreateDataSource(sf)
-            ogr_layer = ogr_dataset.CreateLayer(
-                'failed_uncertainty', srs=ogr_srs)
+            ogr_layer = ogr_dataset.CreateLayer("failed_uncertainty", srs=ogr_srs)
 
             # used the input raster data 'tile_band' as the input and mask, if not
             # used as a mask then a feature that outlines the entire dataset is
@@ -627,7 +612,7 @@ class TvuCheck(GridCheck):
                 ogr_layer,
                 -1,
                 [],
-                callback=None
+                callback=None,
             )
 
             tile_ds = None
@@ -655,7 +640,7 @@ class TvuCheck(GridCheck):
             start=self.start_time,
             end=self.end_time,
             status=self.execution_status,
-            error=self.error_message
+            error=self.error_message,
         )
         data = {}
 
@@ -667,8 +652,8 @@ class TvuCheck(GridCheck):
             }
 
             if self.spatial_qajson:
-                data['map'] = self.tiles_geojson
-                data['extents'] = self.extents_geojson
+                data["map"] = self.tiles_geojson
+                data["extents"] = self.extents_geojson
 
         if self.execution_status == "aborted" or self.execution_status == "failed":
             return QajsonOutputs(
@@ -678,12 +663,10 @@ class TvuCheck(GridCheck):
                 percentage=None,
                 messages=[self.error_message] if self.error_message else None,
                 data=data,
-                check_state=GridCheckState.cs_fail
+                check_state=GridCheckState.cs_fail,
             )
 
-        percent_failed = (
-            self.failed_cell_count / self.total_cell_count * 100.0
-        )
+        percent_failed = self.failed_cell_count / self.total_cell_count * 100.0
         if (100.0 - percent_failed) < self._area_percentage:
             msg = (
                 f"{self.failed_cell_count} nodes failed the TVU check this "
@@ -698,7 +681,7 @@ class TvuCheck(GridCheck):
                 percentage=None,
                 messages=[msg],
                 data=data,
-                check_state=GridCheckState.cs_fail
+                check_state=GridCheckState.cs_fail,
             )
         else:
             return QajsonOutputs(
@@ -708,12 +691,12 @@ class TvuCheck(GridCheck):
                 percentage=None,
                 messages=[],
                 data=data,
-                check_state=GridCheckState.cs_pass
+                check_state=GridCheckState.cs_pass,
             )
 
 
 class ResolutionCheck(GridCheck):
-    '''
+    """
     Determines what areas of the grid satisfy a resolution check. The check
     first calculates a feature detection size (fds) on a per pixel basis, two
     values for this are calculated above and below a threshold depth. In both
@@ -730,11 +713,11 @@ class ResolutionCheck(GridCheck):
     pixels where the grid resolution is lower than the fds * feature
     detection multiplier. If any pixel is false, then the QA check fails.
 
-    '''
+    """
 
-    id = 'c73119ea-4f79-4001-86e3-11c4cbaaeb2d'
-    name = 'Resolution Check'
-    version = '1'
+    id = "c73119ea-4f79-4001-86e3-11c4cbaaeb2d"
+    name = "Resolution Check"
+    version = "1"
 
     # default values taken from IHO - 1a spec
     input_params = [
@@ -743,28 +726,30 @@ class ResolutionCheck(GridCheck):
         QajsonParam("Above Threshold FDS Depth Multiplier", 0.0),
         QajsonParam("Above Threshold FDS Depth Constant", 2.0),
         QajsonParam("Below Threshold FDS Depth Multiplier", 0.05),
-        QajsonParam("Below Threshold FDS Depth Constant", 0.0)
+        QajsonParam("Below Threshold FDS Depth Constant", 0.0),
     ]
-    parameter_help_link='user_manual_qax_MBESGC.html#mbesgc-resolution-params'
+    parameter_help_link = "user_manual_qax_MBESGC.html#mbesgc-resolution-params"
 
     def __init__(self, input_params: List[QajsonParam]):
         super().__init__(input_params)
 
-        self._fds_multiplier = self.get_param(
-            'Feature Detection Size Multiplier')
+        self._fds_multiplier = self.get_param("Feature Detection Size Multiplier")
 
-        self._threshold_depth = self.get_param(
-            'Threshold Depth')
+        self._threshold_depth = self.get_param("Threshold Depth")
 
         self._a_fds_depth_multiplier = self.get_param(
-            'Above Threshold FDS Depth Multiplier')
+            "Above Threshold FDS Depth Multiplier"
+        )
         self._a_fds_depth_constant = self.get_param(
-            'Above Threshold FDS Depth Constant')
+            "Above Threshold FDS Depth Constant"
+        )
 
         self._b_fds_depth_multiplier = self.get_param(
-            'Below Threshold FDS Depth Multiplier')
+            "Below Threshold FDS Depth Multiplier"
+        )
         self._b_fds_depth_constant = self.get_param(
-            'Below Threshold FDS Depth Constant')
+            "Below Threshold FDS Depth Constant"
+        )
 
         self.tiles_geojson = MultiPolygon()
         self.extents_geojson = MultiPolygon()
@@ -786,21 +771,20 @@ class ResolutionCheck(GridCheck):
         self.total_cell_count += last_check.total_cell_count
         self.failed_cell_count += last_check.failed_cell_count
 
-        self.tiles_geojson.coordinates.extend(
-            last_check.tiles_geojson.coordinates
-        )
+        self.tiles_geojson.coordinates.extend(last_check.tiles_geojson.coordinates)
 
         self._merge_temp_dirs(last_check)
 
     def run(
-            self,
-            ifd: InputFileDetails,
-            tile: Tile,
-            depth,
-            density,
-            uncertainty,
-            pinkchart,
-            progress_callback=None):
+        self,
+        ifd: InputFileDetails,
+        tile: Tile,
+        depth,
+        density,
+        uncertainty,
+        pinkchart,
+        progress_callback=None,
+    ):
         # run check on tile data
 
         # this check only requires the depth layer, so check it is given
@@ -834,12 +818,12 @@ class ResolutionCheck(GridCheck):
             abs_depth,
             [
                 abs_depth < abs_threshold_depth,
-                abs_depth >= abs_threshold_depth
+                abs_depth >= abs_threshold_depth,
             ],
             [
                 lambda d: self._a_fds_depth_multiplier * d + self._a_fds_depth_constant,
-                lambda d: self._b_fds_depth_multiplier * d + self._b_fds_depth_constant
-            ]
+                lambda d: self._b_fds_depth_multiplier * d + self._b_fds_depth_constant,
+            ],
         )
 
         fds = np.ma.masked_where(np.ma.getmask(depth), fds)
@@ -864,10 +848,7 @@ class ResolutionCheck(GridCheck):
             return
 
         src_affine = Affine.from_gdal(*ifd.geotransform)
-        tile_affine = src_affine * Affine.translation(
-            tile.min_x,
-            tile.min_y
-        )
+        tile_affine = src_affine * Affine.translation(tile.min_x, tile.min_y)
 
         ogr_srs = osr.SpatialReference()
         ogr_srs.ImportFromWkt(ifd.projection)
@@ -880,19 +861,20 @@ class ResolutionCheck(GridCheck):
             # grow out failed pixels to make them more obvious. We've already
             # calculated the pass/fail stats so this won't impact results.
             failed_resolution_int8_grow = self._grow_pixels(
-                failed_resolution_int8, self.pixel_growth)
+                failed_resolution_int8, self.pixel_growth
+            )
 
             # simplify distance is calculated as the distance pixels are grown out
             # `ifd.geotransform[1]` is pixel size
             assert ifd.geotransform
             simplify_distance = self.pixel_growth * ifd.geotransform[1]
 
-            tile_failed_ds = gdal.GetDriverByName('MEM').Create(
-                '',
+            tile_failed_ds = gdal.GetDriverByName("MEM").Create(
+                "",
                 tile.max_x - tile.min_x,
                 tile.max_y - tile.min_y,
                 1,
-                gdal.GDT_Byte
+                gdal.GDT_Byte,
             )
             tile_failed_ds.SetGeoTransform(tile_affine.to_gdal())
 
@@ -902,9 +884,9 @@ class ResolutionCheck(GridCheck):
             tile_failed_band.FlushCache()
             tile_failed_ds.SetProjection(ifd.projection)
 
-            ogr_driver = ogr.GetDriverByName('MEM')
-            ogr_dataset = ogr_driver.CreateDataSource('shapemask')
-            ogr_layer = ogr_dataset.CreateLayer('shapemask', srs=ogr_srs)
+            ogr_driver = ogr.GetDriverByName("MEM")
+            ogr_dataset = ogr_driver.CreateDataSource("shapemask")
+            ogr_layer = ogr_dataset.CreateLayer("shapemask", srs=ogr_srs)
 
             # used the input raster data 'tile_band' as the input and mask, if not
             # used as a mask then a feature that outlines the entire dataset is
@@ -915,19 +897,18 @@ class ResolutionCheck(GridCheck):
                 ogr_layer,
                 -1,
                 [],
-                callback=None
+                callback=None,
             )
 
-            ogr_simple_driver = ogr.GetDriverByName('MEM')
-            ogr_simple_dataset = ogr_simple_driver.CreateDataSource(
-                'failed_poly')
-            ogr_simple_layer = ogr_simple_dataset.CreateLayer(
-                'failed_poly', srs=None)
+            ogr_simple_driver = ogr.GetDriverByName("MEM")
+            ogr_simple_dataset = ogr_simple_driver.CreateDataSource("failed_poly")
+            ogr_simple_layer = ogr_simple_dataset.CreateLayer("failed_poly", srs=None)
 
             self._simplify_layer(
                 ogr_layer,
                 ogr_simple_layer,
-                simplify_distance)
+                simplify_distance,
+            )
 
             ogr_srs_out = osr.SpatialReference()
             ogr_srs_out.ImportFromEPSG(4326)
@@ -951,14 +932,14 @@ class ResolutionCheck(GridCheck):
             allowable_grid_size.fill_value = -9999.0
             allowable_grid_size = allowable_grid_size.filled()
 
-            ar = self._get_tmp_file('allowable_resolution', 'tif', tile)
-            tile_ds = gdal.GetDriverByName('GTiff').Create(
+            ar = self._get_tmp_file("allowable_resolution", "tif", tile)
+            tile_ds = gdal.GetDriverByName("GTiff").Create(
                 ar,
                 tile.max_x - tile.min_x,
                 tile.max_y - tile.min_y,
                 1,
                 gdal.GDT_Float32,
-                options=['COMPRESS=DEFLATE']
+                options=["COMPRESS=DEFLATE"],
             )
             tile_ds.SetGeoTransform(tile_affine.to_gdal())
 
@@ -968,14 +949,14 @@ class ResolutionCheck(GridCheck):
             tile_band.FlushCache()
             tile_ds.SetProjection(ifd.projection)
 
-            tf = self._get_tmp_file('failed_resolution', 'tif', tile)
-            tile_failed_ds = gdal.GetDriverByName('GTiff').Create(
+            tf = self._get_tmp_file("failed_resolution", "tif", tile)
+            tile_failed_ds = gdal.GetDriverByName("GTiff").Create(
                 tf,
                 tile.max_x - tile.min_x,
                 tile.max_y - tile.min_y,
                 1,
                 gdal.GDT_Byte,
-                options=['COMPRESS=DEFLATE']
+                options=["COMPRESS=DEFLATE"],
             )
             tile_failed_ds.SetGeoTransform(tile_affine.to_gdal())
 
@@ -985,11 +966,10 @@ class ResolutionCheck(GridCheck):
             tile_failed_band.FlushCache()
             tile_failed_ds.SetProjection(ifd.projection)
 
-            sf = self._get_tmp_file('failed_resolution', 'shp', tile)
+            sf = self._get_tmp_file("failed_resolution", "shp", tile)
             ogr_driver = ogr.GetDriverByName("ESRI Shapefile")
             ogr_dataset = ogr_driver.CreateDataSource(sf)
-            ogr_layer = ogr_dataset.CreateLayer(
-                'failed_resolution', srs=ogr_srs)
+            ogr_layer = ogr_dataset.CreateLayer("failed_resolution", srs=ogr_srs)
 
             # used the input raster data 'tile_band' as the input and mask, if not
             # used as a mask then a feature that outlines the entire dataset is
@@ -1000,9 +980,8 @@ class ResolutionCheck(GridCheck):
                 ogr_layer,
                 -1,
                 [],
-                callback=None
+                callback=None,
             )
-
             tile_ds = None
             tile_failed_ds = None
             ogr_dataset.Destroy()
@@ -1028,7 +1007,7 @@ class ResolutionCheck(GridCheck):
             start=self.start_time,
             end=self.end_time,
             status=self.execution_status,
-            error=self.error_message
+            error=self.error_message,
         )
 
         data = {}
@@ -1037,12 +1016,12 @@ class ResolutionCheck(GridCheck):
                 "failed_cell_count": self.failed_cell_count,
                 "total_cell_count": self.total_cell_count,
                 "fraction_failed": self.failed_cell_count / self.total_cell_count,
-                "grid_resolution": self.grid_resolution
+                "grid_resolution": self.grid_resolution,
             }
 
             if self.spatial_qajson:
-                data['map'] = self.tiles_geojson
-                data['extents'] = self.extents_geojson
+                data["map"] = self.tiles_geojson
+                data["extents"] = self.extents_geojson
 
         if self.execution_status == "aborted" or self.execution_status == "failed":
             return QajsonOutputs(
@@ -1052,12 +1031,10 @@ class ResolutionCheck(GridCheck):
                 percentage=None,
                 messages=[self.error_message] if self.error_message else None,
                 data=data,
-                check_state=GridCheckState.cs_fail
+                check_state=GridCheckState.cs_fail,
             )
         elif self.failed_cell_count > 0:
-            percent_failed = (
-                self.failed_cell_count / self.total_cell_count * 100
-            )
+            percent_failed = self.failed_cell_count / self.total_cell_count * 100
             msg = (
                 f"{self.failed_cell_count} nodes failed the resolution check "
                 f"this represents {percent_failed:.1f}% of all nodes within "
@@ -1070,7 +1047,7 @@ class ResolutionCheck(GridCheck):
                 percentage=None,
                 messages=[msg],
                 data=data,
-                check_state=GridCheckState.cs_fail
+                check_state=GridCheckState.cs_fail,
             )
         else:
             return QajsonOutputs(
@@ -1080,5 +1057,5 @@ class ResolutionCheck(GridCheck):
                 percentage=None,
                 messages=[],
                 data=data,
-                check_state=GridCheckState.cs_pass
+                check_state=GridCheckState.cs_pass,
             )

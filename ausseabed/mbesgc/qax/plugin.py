@@ -11,7 +11,6 @@ from ausseabed.qajson.model import QajsonRoot, QajsonInputs
 
 
 class MbesGridChecksQaxPlugin(QaxCheckToolPlugin):
-
     # supported raw data file types
     file_types = [
         QaxFileType(

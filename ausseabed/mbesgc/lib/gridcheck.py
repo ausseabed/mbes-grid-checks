@@ -1,6 +1,7 @@
-'''
+"""
 Definition of Grid Checks implemented in mbesgc
-'''
+"""
+
 from __future__ import annotations
 from datetime import datetime
 from enum import Enum
@@ -18,28 +19,30 @@ from osgeo import ogr
 
 
 class GridCheckState(str, Enum):
-    cs_pass = 'pass'
-    cs_warning = 'warning'
-    cs_fail = 'fail'
+    cs_pass = "pass"
+    cs_warning = "warning"
+    cs_fail = "fail"
 
 
 class GridCheckResult:
-    '''
+    """
     Encapsulates the various outputs from a grid check
-    '''
+    """
 
     def __init__(
-            self,
-            state: GridCheckState,
-            messages: List = []):
+        self,
+        state: GridCheckState,
+        messages: List = [],
+    ):
         self.state = state
         self.messages = messages
 
 
 class GridCheck:
-    '''
+    """
     Base class for all grid checks
-    '''
+    """
+
     id: ClassVar[str] = ""
     name: ClassVar[str] = ""
     version: ClassVar[str] = ""
@@ -54,7 +57,7 @@ class GridCheck:
         self.end_time = None
 
         # did the check execute successfully
-        self.execution_status = 'draft'
+        self.execution_status = "draft"
         # any error messages that occured during running of the check
         self.error_message: str | None = None
 
@@ -67,10 +70,10 @@ class GridCheck:
         self.temp_dir_all: list[TemporaryDirectory] = []
 
     def check_started(self):
-        '''
+        """
         to be called before first call to checkc `run` function. Initialises
         the check
-        '''
+        """
         if self.spatial_export_location is not None and self.spatial_export:
             # create a temp folder to keep all the tiled chunks of data
             p = PurePath(self.spatial_export_location)
@@ -86,7 +89,7 @@ class GridCheck:
             # only set the start time if the start_time is None, as this
             # function may be called multiple times as each tile is processed
             self.start_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-        self.execution_status = 'running'
+        self.execution_status = "running"
 
     def _merge_temp_dirs(self, last_check: GridCheck):
         self.temp_dir_all.extend(last_check.temp_dir_all)
@@ -99,45 +102,45 @@ class GridCheck:
     def _move_tmp_dir(self):
         assert self.temp_base_dir is not None
         assert self.spatial_export_location is not None
-        shutil.copytree(self.temp_base_dir, self.spatial_export_location, dirs_exist_ok=True)
+        shutil.copytree(
+            self.temp_base_dir, self.spatial_export_location, dirs_exist_ok=True
+        )
 
     def check_ended(self):
-        '''
+        """
         to be called after last call to check `run` function. Finalises
         the check
-        '''
+        """
         self.end_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
 
-        if self.execution_status == 'running':
-            self.execution_status = 'completed'
+        if self.execution_status == "running":
+            self.execution_status = "completed"
 
     def get_param(self, param_name: str) -> Any:
-        ''' Gets the parameter value from the list of QajsonParams. Returns
+        """Gets the parameter value from the list of QajsonParams. Returns
         None if no parameter found. If multiple parameters share the same
         name, the first will be returned.
-        '''
+        """
         if len(self.input_params) == 0:
             return None
 
-        param = next(
-            param
-            for param in self.input_params
-            if param.name == param_name
-        )
+        param = next(param for param in self.input_params if param.name == param_name)
         if param is None:
             return None
         else:
             return param.value
 
-    def run(self,
-            ifd: InputFileDetails,
-            tile: Tile,
-            depth,
-            density,
-            uncertainty,
-            pinkchart,
-            progress_callback=None):
-        '''
+    def run(
+        self,
+        ifd: InputFileDetails,
+        tile: Tile,
+        depth,
+        density,
+        uncertainty,
+        pinkchart,
+        progress_callback=None,
+    ):
+        """
         Abstract function definition for how each check should implement its
         run method.
 
@@ -156,11 +159,11 @@ class GridCheck:
         Returns:
             nothing?
 
-        '''
+        """
         raise NotImplementedError
 
     def merge_results(self, last_check: GridCheck) -> None:
-        '''
+        """
         Abstract function definition for how each check should merge results.
 
         Checks are run on a tile by tile (chunck of input data) basis. To get
@@ -168,20 +171,20 @@ class GridCheck:
         This merging needs to be implemented within this function.
 
         Must be overwritten by child classes
-        '''
+        """
         raise NotImplementedError
 
     def get_outputs(self) -> QajsonOutputs:
-        '''
+        """
         Gets the results of this check in a QaJson format
-        '''
+        """
         raise NotImplementedError
 
     def _simplify_layer(self, in_lyr, out_lyr, simplify_distance):
-        '''
+        """
         Creates a simplified layer from an input layer using GDAL's
         simplify function
-        '''
+        """
         for in_feat in in_lyr:
             geom = in_feat.GetGeometryRef()
             simple_geom = geom.SimplifyPreserveTopology(simplify_distance)
@@ -194,16 +197,17 @@ class GridCheck:
         out_lyr.CreateFeature(out_feat)
 
     def _grow_pixels(self, data_array, pixel_growth):
-        '''
+        """
         Used for boolean data arrays, will grow out a non-zero (true) pixel
         value by a certain number of pixels. Helps fatten up areas that fail
         a check and supports more simple ploygonised geometry.
-        '''
+        """
+
         def test_func(values):
             return values.max()
 
         return ndimage.generic_filter(
             data_array,
             test_func,
-            size=(pixel_growth, pixel_growth)
+            size=(pixel_growth, pixel_growth),
         )

@@ -4,7 +4,6 @@ from osgeo import osr
 
 
 class Tile:
-
     def __init__(self, min_x, min_y, max_x, max_y):
         self.min_x = min_x
         self.min_y = min_y
@@ -32,7 +31,7 @@ class Tile:
             max_x_min_y,
             max_x_max_y,
             min_x_max_y,
-            min_x_min_y
+            min_x_min_y,
         ]
 
         src_proj = osr.SpatialReference()
@@ -54,11 +53,11 @@ class Tile:
 
 
 def get_tiles(min_x, min_y, max_x, max_y, size_x, size_y):
-    '''
+    """
     Breaks the given extents down into a number of tiles based on a tile size.
     Edge tiles will have a smaller dimension if the extents are not divisible
     by the size.
-    '''
+    """
     assert min_x < max_x
     assert min_y < max_y
     assert size_x != 0

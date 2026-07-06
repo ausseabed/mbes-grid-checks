@@ -3,5 +3,5 @@ from ausseabed.mbesgc.lib.mbesgridcheck import DensityCheck, ResolutionCheck, Tv
 all_checks = [
     DensityCheck,
     ResolutionCheck,
-    TvuCheck
+    TvuCheck,
 ]

@@ -43,7 +43,6 @@ class InputFileDetailsError(RuntimeError):
 
 
 class InputFileDetails:
-
     def __init__(self) -> None:
         self.size_x: int = 0
         self.size_y: int = 0
@@ -323,7 +322,6 @@ def _get_tiff_details(input_files) -> InputFileDetails:
     ifd = InputFileDetails()
 
     for input_file in input_files:
-
         raster: gdal.Dataset = gdal.Open(input_file)
         if raster is None:
             raise RuntimeError(f"input file {input_file} could not be opened")
@@ -396,7 +394,7 @@ def _get_bag_details(input_file):
     input_file_density = f"{fn_no_extension}_Density.bag"
     if not os.path.isfile(input_file_density):
         raise RuntimeError(
-            "Could not find density file for bag , expected " f"{input_file_density}"
+            f"Could not find density file for bag , expected {input_file_density}"
         )
 
     depth_raster = gdal.Open(input_file)
