@@ -4,7 +4,6 @@ from ausseabed.mbesgc.lib.tiling import get_tiles
 
 
 class TestTiling(unittest.TestCase):
-
     def test_get_tiles(self):
         min_x = 0
         min_y = 0

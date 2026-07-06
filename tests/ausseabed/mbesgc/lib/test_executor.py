@@ -99,23 +99,21 @@ check02_str = """
 
 
 class TestExecutor(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.check_01 = QajsonCheck.from_dict(json.loads(check01_str))
-        cls.check_02 = QajsonCheck.from_dict(json.loads(check02_str)) 
+        cls.check_02 = QajsonCheck.from_dict(json.loads(check02_str))
 
     def test_x(self):
         # inputs = inputs_from_qajson_checks([self.check_01])
         # print("inputs for check")
         # for input in inputs:
         #     print(input)
-        
+
         inputs = inputs_from_qajson_checks([self.check_02])
         # print("inputs for check")
         # for input in inputs:
         #     print(input)
-
 
         exe = Executor(inputs, all_checks)
         exe._preprocess()

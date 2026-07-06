@@ -10,7 +10,6 @@ from ausseabed.mbesgc.lib.tiling import Tile
 
 
 class TestDensityCheck(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         # these objects are often needed by checks, but only for the generation of
@@ -20,50 +19,49 @@ class TestDensityCheck(unittest.TestCase):
         cls.dummy_ifd.size_x = 5
         cls.dummy_ifd.size_y = 5
         cls.dummy_ifd.geotransform = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        cls.dummy_ifd.projection = ('GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]')  # noqa
+        cls.dummy_ifd.projection = 'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]'  # noqa
 
         cls.dummy_tile = Tile(0, 0, 5, 5)
 
         # set up some dummy data
         mask = [
-            [False,  False,  False, False],
-            [False,  False,  False, False],
-            [False,  False,  False, False],
-            [False,  False,  False, True],
-            [False,  False,  True, True]
+            [False, False, False, False],
+            [False, False, False, False],
+            [False, False, False, False],
+            [False, False, False, True],
+            [False, False, True, True],
         ]
         depth_data = [
-            [-40,  -40,  -40, -40],
-            [-40,  -60,  -80, -40],
-            [-40,  -60,  -70, -40],
-            [-40,  -30,  -70, -40],
-            [-40,  -40,  -40, -40]
+            [-40, -40, -40, -40],
+            [-40, -60, -80, -40],
+            [-40, -60, -70, -40],
+            [-40, -30, -70, -40],
+            [-40, -40, -40, -40],
         ]
         cls.depth = np.ma.array(
             np.array(depth_data, dtype=np.float32),
-            mask=mask
+            mask=mask,
         )
         density_data = [
-            [10,  1,  9, 9],
-            [10,  2, 10, 10],
+            [10, 1, 9, 9],
+            [10, 2, 10, 10],
             [10, 10, 10, 10],
             [10, 10, 10, 10],
             [10, 10, 10, 10],
         ]
         cls.density = np.ma.array(
             np.array(density_data, dtype=np.float32),
-            mask=mask
+            mask=mask,
         )
         uncertainty_data = [
-            [0.7,  0.7,  0.2, 0.2],
-            [0.7,  0.4,  0.2, 0.2],
-            [0.2,  0.2,  0.2, 0.9],
-            [0.2,  0.2,  0.9, 0.0],
-            [0.2,  0.2,  0.2, 0.0]
+            [0.7, 0.7, 0.2, 0.2],
+            [0.7, 0.4, 0.2, 0.2],
+            [0.2, 0.2, 0.2, 0.9],
+            [0.2, 0.2, 0.9, 0.0],
+            [0.2, 0.2, 0.2, 0.0],
         ]
         cls.uncertainty = np.ma.array(
-            np.array(uncertainty_data, dtype=np.float32),
-            mask=mask
+            np.array(uncertainty_data, dtype=np.float32), mask=mask
         )
 
     def test_result_hist_chunk_merge(self):
@@ -72,14 +70,14 @@ class TestDensityCheck(unittest.TestCase):
             1: 5,
             2: 7,
             5: 8,
-            10: 1
+            10: 1,
         }
         res_b = {
             0: 1,
             2: 3,
             4: 2,
             5: 3,
-            9: 1
+            9: 1,
         }
 
         c_a = DensityCheck([])
@@ -111,7 +109,7 @@ class TestDensityCheck(unittest.TestCase):
             depth=self.depth,
             density=self.density,
             uncertainty=self.uncertainty,
-            pinkchart=None
+            pinkchart=None,
         )
 
         density_histogram = check.density_histogram
@@ -144,7 +142,7 @@ class TestDensityCheck(unittest.TestCase):
             depth=self.depth,
             density=self.density,
             uncertainty=self.uncertainty,
-            pinkchart=None
+            pinkchart=None,
         )
 
         # now check the output data
