@@ -63,13 +63,6 @@ def get_tiles(min_x, min_y, max_x, max_y, size_x, size_y):
     assert size_x != 0
     assert size_y != 0
 
-    dX = int(max_x) - int(min_x)
-    dY = int(max_y) - int(min_y)
-    whole_steps_x = dX / int(size_x)
-    whole_steps_y = dY / int(size_y)
-    rX = dX % whole_steps_x
-    rY = dY % whole_steps_y
-
     tiles = []
     for y in range(int(min_y), int(max_y), int(size_y)):
         next_y = y + int(size_y)
