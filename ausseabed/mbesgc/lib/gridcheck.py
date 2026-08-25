@@ -200,14 +200,10 @@ class GridCheck:
         """
         Used for boolean data arrays, will grow out a non-zero (true) pixel
         value by a certain number of pixels. Helps fatten up areas that fail
-        a check and supports more simple ploygonised geometry.
+        a check and supports more simple polygonised geometry.
         """
 
-        def test_func(values):
-            return values.max()
-
-        return ndimage.generic_filter(
+        return ndimage.maximum_filter(
             data_array,
-            test_func,
             size=(pixel_growth, pixel_growth),
         )
